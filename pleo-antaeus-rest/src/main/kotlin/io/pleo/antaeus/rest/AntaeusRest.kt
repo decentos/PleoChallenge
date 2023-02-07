@@ -89,7 +89,6 @@ class AntaeusRest(
                         post("pending") {
                             CoroutineScope(Dispatchers.Default).launch {
                                 billingService.sendInvoicesAsync(InvoiceStatus.PENDING)
-                                    .also { logger.info("Process of sending invoices with the status Pending has started") }
                             }
                             it.json("accepted")
                         }
@@ -98,7 +97,6 @@ class AntaeusRest(
                         post("retry") {
                             CoroutineScope(Dispatchers.Default).launch {
                                 billingService.sendInvoicesAsync(InvoiceStatus.RETRY)
-                                    .also { logger.info("Process of sending invoices with the status Retry has started") }
                             }
                             it.json("accepted")
                         }

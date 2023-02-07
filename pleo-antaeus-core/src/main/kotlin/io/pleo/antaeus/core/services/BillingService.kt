@@ -12,19 +12,20 @@ import mu.KotlinLogging
 
 class BillingService(
     private val paymentProvider: PaymentProvider,
-    private val invoiceService: InvoiceService
+    private val invoiceService: InvoiceService,
 ) {
     private val logger = KotlinLogging.logger {}
 
     suspend fun sendInvoicesAsync(status: InvoiceStatus) = coroutineScope {
+        logger.info("Process of sending invoices with the status ${status.name} has started")
         val invoices = try {
             invoiceService.fetchInvoicesByStatus(status)
         } catch (e: Exception) {
-            emptyList<Invoice>()
+            emptyList()
         }
         if (invoices.isNotEmpty()) {
             logger.info { "Successfully retrieving ${invoices.size} invoice(s) with ${status.name} status" }
-            launch { invoices.forEach { sendInvoice(it) } }
+            invoices.forEach { launch { sendInvoice(it) } }
         }
     }
 
@@ -56,6 +57,5 @@ class BillingService(
                 }
             }
         }
-
     }
 }
