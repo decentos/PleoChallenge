@@ -96,3 +96,15 @@ The code given is structured as follows. Feel free however to modify the structu
 * [Sqlite3](https://sqlite.org/index.html) - Database storage engine
 
 Happy hacking 😁!
+
+### Process
+
+### Setting up Environment (1h spent)
+Dive into the project, install Gradle and Docker. Starting the project in the current state, studying response models.
+
+### Work plan (1h spent)
+1. Write the logic of method for sending invoices
+2. Error handling and payment retry
+3. Notification of the customer about the payment error
+4. Payment scheduling
+5. Testing
