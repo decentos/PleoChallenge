@@ -109,6 +109,13 @@ Dive into the project, install Gradle and Docker. Starting the project in the cu
 4. Payment scheduling
 5. Testing
 
+### Core functionality (2h spent)
+Implementing methods for invoices with status `InvoiceStatus.PENDING`(monthly) and `InvoiceStatus.RETRY`(daily).
+When sending the request for the first time, all payments with the `InvoiceStatus.PENDING` status will be processed asynchronously using Coroutines.
+If there are problems with payment (client doesn't have enough money or network errors), payments are changed to the `InvoiceStatus.RETRY` status and will be processed again in 24 hours.
+A notification is sent to the client after the payment is made (about success or failure).
+If serious errors have occurred (client is not found or currency does not match), the payment is transferred to the `InvoiceStatus.REJECTED` status and will not be processed anymore.
+
 ### Future improvements
 1. Add Global Exception Handler (e.g. using `@ControllerAdvice` from Spring Framework) and handle all exceptions in separate place
 2. Create a single method for sending invoices with the status of the request parameter + add an exception when sending a status other than Pending or Retry
