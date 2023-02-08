@@ -38,7 +38,7 @@ class AntaeusDal(private val db: Database) {
     fun fetchInvoicesByStatus(status: InvoiceStatus): List<Invoice> {
         return transaction(db) {
             InvoiceTable
-                .select { InvoiceTable.status.eq(status.toString()) }
+                .select { InvoiceTable.status.eq(status.name) }
                 .map { it.toInvoice() }
         }
     }
@@ -49,8 +49,8 @@ class AntaeusDal(private val db: Database) {
             InvoiceTable
                 .insert {
                     it[this.value] = amount.value
-                    it[this.currency] = amount.currency.toString()
-                    it[this.status] = status.toString()
+                    it[this.currency] = amount.currency.name
+                    it[this.status] = status.name
                     it[this.customerId] = customer.id
                 } get InvoiceTable.id
         }
@@ -61,7 +61,7 @@ class AntaeusDal(private val db: Database) {
     fun updateInvoiceStatus (id: Int, status: InvoiceStatus) {
         transaction(db) {
             InvoiceTable.update({ InvoiceTable.id.eq(id) }) {
-                it[this.status] = status.toString()
+                it[this.status] = status.name
             }
         }
     }
@@ -87,7 +87,7 @@ class AntaeusDal(private val db: Database) {
         val id = transaction(db) {
             // Insert the customer and return its new id.
             CustomerTable.insert {
-                it[this.currency] = currency.toString()
+                it[this.currency] = currency.name
             } get CustomerTable.id
         }
 

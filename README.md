@@ -112,4 +112,4 @@ Dive into the project, install Gradle and Docker. Starting the project in the cu
 ### Future improvements
 1. Add Global Exception Handler (e.g. using `@ControllerAdvice` from Spring Framework) and handle all exceptions in separate place
 2. Create a single method for sending invoices with the status of the request parameter + add an exception when sending a status other than Pending or Retry
-3. Refactoring calling enum values: instead `InvoiceStatus.STATUS.toString()` using `InvoiceStatus.STATUS.name`
+3. Using `application.yml` for client messages
