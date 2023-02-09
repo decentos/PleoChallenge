@@ -16,6 +16,7 @@ import io.pleo.antaeus.data.AntaeusDal
 import io.pleo.antaeus.data.CustomerTable
 import io.pleo.antaeus.data.InvoiceTable
 import io.pleo.antaeus.rest.AntaeusRest
+import io.pleo.antaeus.scheduler.SchedulerService
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.StdOutSqlLogger
@@ -68,6 +69,15 @@ fun main() {
         invoiceService = invoiceService,
         notificationService = notificationService,
     )
+
+    val schedulerService = SchedulerService(
+        billingService = billingService,
+        pendingJobPeriod = "0 0 10 1 1/1 ? *", // every 1 day of Month at 10 am
+        retryJobPeriod = "0 0 12 1/1 * ? *" // every day at 12 pm
+//        pendingJobPeriod = "0 0/10 * 1/1 * ? *", // every 10 minutes for test
+//        retryJobPeriod = "0 0/1 * 1/1 * ? *" // every minute for test
+    )
+    schedulerService.startScheduler()
 
     // Create REST web service
     AntaeusRest(
