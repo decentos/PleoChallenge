@@ -136,7 +136,12 @@ In general, the solution using Ofelia seems interesting, but the tool is still n
 
 As a result, I use Quartz Scheduler to create cron jobs.
 
+### Testing (1h spent)
+The testing was done by unit testing BillingService. The function was executed with all possible scenarios and input data. All possible application flows have been handled.
+
 ### Future improvements
 1. Add Global Exception Handler (e.g. using `@ControllerAdvice` from Spring Framework) and handle all exceptions in separate place
 2. Create a single method for sending invoices with the status of the request parameter + add an exception when sending a status other than Pending or Retry
 3. Using `application.yml` for client messages
+4. Implement distributed locking (e.g. using Redis or ZooKeeper) to avoid a situation where the customer has paid for the invoice twice
+5. Store data for the billing retry event in a cache with a TTL of 1 day
