@@ -145,3 +145,4 @@ The testing was done by unit testing BillingService. The function was executed w
 3. Using `application.yml` for client messages
 4. Implement distributed locking (e.g. using Redis or ZooKeeper) to avoid a situation where the customer has paid for the invoice twice
 5. Store data for the billing retry event in a cache with a TTL of 1 day
+6. Sending invoices to Message Broker for fully asynchronous and decoupled processes (make the system scale horizontally and also more fault-tolerant)
