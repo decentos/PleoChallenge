@@ -94,5 +94,55 @@ The code given is structured as follows. Feel free however to modify the structu
 * [JUnit 5](https://junit.org/junit5/) - Testing framework
 * [Mockk](https://mockk.io/) - Mocking library
 * [Sqlite3](https://sqlite.org/index.html) - Database storage engine
+* [Qaurtz](https://github.com/quartz-scheduler/quartz) - Scheduling library
 
 Happy hacking 😁!
+
+### Process
+
+### Setting up Environment (1h spent)
+Dive into the project, install Gradle and Docker. Starting the project in the current state, studying response models.
+
+### Work plan (1h spent)
+1. Write the logic of method for sending invoices
+2. Error handling and payment retry
+3. Notification of the customer about the payment error
+4. Payment scheduling
+5. Testing
+
+### Core functionality (2h spent)
+Implementing methods for invoices with status `InvoiceStatus.PENDING`(monthly) and `InvoiceStatus.RETRY`(daily).
+
+When sending the request for the first time, all payments with the `InvoiceStatus.PENDING` status will be processed asynchronously using Coroutines.
+If there are problems with payment (client doesn't have enough money or network errors), payments are changed to the `InvoiceStatus.RETRY` status and will be processed again in 24 hours.
+
+A notification is sent to the client after the payment is made (about success or failure).
+
+If serious errors have occurred (client is not found or currency does not match), the payment is transferred to the `InvoiceStatus.REJECTED` status and will not be processed anymore.
+
+### Scheduling (2h spent)
+After the research, I found 3 ways to implement scheduling:
+1. [Timer](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.concurrent/java.util.-timer/schedule.html) - Standard Kotlin library
+2. [Ofelia](https://github.com/mcuadros/ofelia) - Docker job scheduling
+3. [Qaurtz](https://github.com/quartz-scheduler/quartz) - Scheduling library
+
+The first approach seemed to me like brute force. I would like the scheduler to be separated from the main application flow.
+
+Ofelia is a job scheduler which have the ability to execute commands directly on Docker containers. 
+To implement this approach, it would be convenient to configure docker-compose to run the service and the scheduler together.
+Also, the advantages of this approach are that I will call methods using the REST API, which decouple application flows.
+I have encountered difficulties using this approach since Curl is not installed in the container. Perhaps this can be done with a workaround using wget.
+In general, the solution using Ofelia seems interesting, but the tool is still not ready and a little inconvenient.
+
+As a result, I use Quartz Scheduler to create cron jobs.
+
+### Testing (1h spent)
+The testing was done by unit testing BillingService. The function was executed with all possible scenarios and input data. All possible application flows have been handled.
+
+### Future improvements
+1. Add Global Exception Handler (e.g. using `@ControllerAdvice` from Spring Framework) and handle all exceptions in separate place
+2. Create a single method for sending invoices with the status of the request parameter + add an exception when sending a status other than Pending or Retry
+3. Using `application.yml` for client messages
+4. Implement distributed locking (e.g. using Redis or ZooKeeper) to avoid a situation where the customer has paid for the invoice twice
+5. Store data for the billing retry event in a cache with a TTL of 1 day
+6. Sending invoices to Message Broker for fully asynchronous and decoupled processes (make the system scale horizontally and also more fault-tolerant)

@@ -12,10 +12,7 @@ import io.pleo.antaeus.models.Customer
 import io.pleo.antaeus.models.Invoice
 import io.pleo.antaeus.models.InvoiceStatus
 import io.pleo.antaeus.models.Money
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class AntaeusDal(private val db: Database) {
@@ -38,19 +35,35 @@ class AntaeusDal(private val db: Database) {
         }
     }
 
+    fun fetchInvoicesByStatus(status: InvoiceStatus): List<Invoice> {
+        return transaction(db) {
+            InvoiceTable
+                .select { InvoiceTable.status.eq(status.name) }
+                .map { it.toInvoice() }
+        }
+    }
+
     fun createInvoice(amount: Money, customer: Customer, status: InvoiceStatus = InvoiceStatus.PENDING): Invoice? {
         val id = transaction(db) {
             // Insert the invoice and returns its new id.
             InvoiceTable
                 .insert {
                     it[this.value] = amount.value
-                    it[this.currency] = amount.currency.toString()
-                    it[this.status] = status.toString()
+                    it[this.currency] = amount.currency.name
+                    it[this.status] = status.name
                     it[this.customerId] = customer.id
                 } get InvoiceTable.id
         }
 
         return fetchInvoice(id)
+    }
+
+    fun updateInvoiceStatus (id: Int, status: InvoiceStatus) {
+        transaction(db) {
+            InvoiceTable.update({ InvoiceTable.id.eq(id) }) {
+                it[this.status] = status.name
+            }
+        }
     }
 
     fun fetchCustomer(id: Int): Customer? {
@@ -74,7 +87,7 @@ class AntaeusDal(private val db: Database) {
         val id = transaction(db) {
             // Insert the customer and return its new id.
             CustomerTable.insert {
-                it[this.currency] = currency.toString()
+                it[this.currency] = currency.name
             } get CustomerTable.id
         }
 

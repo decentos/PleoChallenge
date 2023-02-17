@@ -11,10 +11,12 @@ import getPaymentProvider
 import io.pleo.antaeus.core.services.BillingService
 import io.pleo.antaeus.core.services.CustomerService
 import io.pleo.antaeus.core.services.InvoiceService
+import io.pleo.antaeus.core.services.NotificationService
 import io.pleo.antaeus.data.AntaeusDal
 import io.pleo.antaeus.data.CustomerTable
 import io.pleo.antaeus.data.InvoiceTable
 import io.pleo.antaeus.rest.AntaeusRest
+import io.pleo.antaeus.scheduler.SchedulerService
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.StdOutSqlLogger
@@ -59,13 +61,28 @@ fun main() {
     // Create core services
     val invoiceService = InvoiceService(dal = dal)
     val customerService = CustomerService(dal = dal)
+    val notificationService = NotificationService()
 
     // This is _your_ billing service to be included where you see fit
-    val billingService = BillingService(paymentProvider = paymentProvider)
+    val billingService = BillingService(
+        paymentProvider = paymentProvider,
+        invoiceService = invoiceService,
+        notificationService = notificationService,
+    )
+
+    val schedulerService = SchedulerService(
+        billingService = billingService,
+        pendingJobPeriod = "0 0 10 1 1/1 ? *", // every 1 day of Month at 10 am
+        retryJobPeriod = "0 0 12 1/1 * ? *" // every day at 12 pm
+//        pendingJobPeriod = "0 0/10 * 1/1 * ? *", // every 10 minutes for test
+//        retryJobPeriod = "0 0/1 * 1/1 * ? *" // every minute for test
+    )
+    schedulerService.startScheduler()
 
     // Create REST web service
     AntaeusRest(
         invoiceService = invoiceService,
-        customerService = customerService
+        customerService = customerService,
+        billingService = billingService,
     ).run()
 }

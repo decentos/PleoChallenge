@@ -1,0 +1,4 @@
+customerNotification:
+  success: Invoice was successfully charged.
+  notEnoughMoney: Your balance is not enough to pay the invoice. Please top up your account. We'll try again tomorrow.
+  networkError:  Failed attempt to make a payment. We'll try again later.
